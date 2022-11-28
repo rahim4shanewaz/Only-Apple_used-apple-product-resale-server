@@ -56,6 +56,25 @@ async function run(){
         const categories_iPhone_Collection = client.db('categories').collection('home-accessories');
         const categories_accessories_Collection = client.db('categories').collection('iphone');
 
+
+        const verifyAdmin = async (req, res, next) => {
+            const decodedEmail = req.decoded.email;
+            const query = { email: decodedEmail };
+            const user = await usersCollection.findOne(query);
+
+            if (user?.role !== 'admin') {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
+            next();
+        }
+
+
+
+
+
+
+
+
         app.get('/allservices', async (req, res) =>{
            
             const query ={};
@@ -63,11 +82,12 @@ async function run(){
             const services = await cursor.toArray();
             res.send(services);
         });
+        
 
 
 
 
-        app.get('/macBook', async (req, res) =>{
+        app.get('/macBook',verifyJWt, async (req, res) =>{
            
             const query ={};
             const cursor =  categories_macBook_Collection.find(query);
@@ -75,14 +95,14 @@ async function run(){
             res.send(macBooks);
         });
         
-        app.get('/iphone', async (req, res) =>{
+        app.get('/iphone',verifyJWt, async (req, res) =>{
            
             const query ={};
             const cursor =  categories_iPhone_Collection.find(query);
             const iphones = await cursor.toArray();
             res.send(iphones);
         });
-        app.get('/accessories', async (req, res) =>{
+        app.get('/accessories',verifyJWt, async (req, res) =>{
            
             const query ={};
             const cursor =  categories_accessories_Collection.find(query);
@@ -93,21 +113,21 @@ async function run(){
 
 
 
-        app.get('/categories/macBook', async (req, res) =>{
+        app.get('/categories/macBook',verifyJWt, async (req, res) =>{
            
             const query ={};
             const cursor =  categories_macBook_Collection.find(query);
             const macBooks = await cursor.toArray();
             res.send(macBooks);
         });
-        app.get('/categories/iphone', async (req, res) =>{
+        app.get('/categories/iphone',verifyJWt, async (req, res) =>{
            
             const query ={};
             const cursor =  categories_iPhone_Collection.find(query);
             const iphones = await cursor.toArray();
             res.send(iphones);
         });
-        app.get('/categories/accessories', async (req, res) =>{
+        app.get('/categories/accessories',verifyJWt, async (req, res) =>{
            
             const query ={};
             const cursor =   categories_accessories_Collection.find(query);
@@ -120,18 +140,27 @@ async function run(){
 
 
 
+        app.get('/users/allbuyer', verifyJWt, async (req, res) => {
+            const role = req.query.role;
+            
+            const query = {role:"buyer"};
+            const buyer = await usersCollection.find(query).toArray();
+            res.send(buyer);
+        });
 
 
 
 
 
+        
 
 
-
-        app.get('/users', async (req, res) => {
-            const query = {};
-            const users = await usersCollection.find(query).toArray();
-            res.send(users);
+        app.get('/users/allseller', verifyJWt, async (req, res) => {
+            const role = req.query.role;
+            
+            const query = {role:"seller"};
+            const seller = await usersCollection.find(query).toArray();
+            res.send(seller);
         });
 
 
@@ -141,6 +170,13 @@ async function run(){
             const user = await usersCollection.findOne(query);
             res.send(user);
         })
+
+        // app.get('/users/buyer/', async (req, res) => {
+           
+        //     const query = { email }
+        //     const user = await usersCollection.find(query);
+        //     res.send({ isBuyer: user?.role === 'buyer' });
+        // })
 
 
         
