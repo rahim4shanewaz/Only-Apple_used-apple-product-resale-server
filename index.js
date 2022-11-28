@@ -52,6 +52,9 @@ async function run(){
 
         const serviceCollection = client.db('interior-services').collection('services');
         const usersCollection = client.db('re-sell-services').collection('user');
+        const categories_macBook_Collection = client.db('categories').collection('apple-mac');
+        const categories_iPhone_Collection = client.db('categories').collection('home-accessories');
+        const categories_accessories_Collection = client.db('categories').collection('iphone');
 
         app.get('/allservices', async (req, res) =>{
            
@@ -60,6 +63,66 @@ async function run(){
             const services = await cursor.toArray();
             res.send(services);
         });
+
+
+
+
+        app.get('/macBook', async (req, res) =>{
+           
+            const query ={};
+            const cursor =  categories_macBook_Collection.find(query);
+            const macBooks = await cursor.toArray();
+            res.send(macBooks);
+        });
+        
+        app.get('/iphone', async (req, res) =>{
+           
+            const query ={};
+            const cursor =  categories_iPhone_Collection.find(query);
+            const iphones = await cursor.toArray();
+            res.send(iphones);
+        });
+        app.get('/accessories', async (req, res) =>{
+           
+            const query ={};
+            const cursor =  categories_accessories_Collection.find(query);
+            const accessories = await cursor.toArray();
+            res.send(accessories);
+        });
+
+
+
+
+        app.get('/categories/macBook', async (req, res) =>{
+           
+            const query ={};
+            const cursor =  categories_macBook_Collection.find(query);
+            const macBooks = await cursor.toArray();
+            res.send(macBooks);
+        });
+        app.get('/categories/iphone', async (req, res) =>{
+           
+            const query ={};
+            const cursor =  categories_iPhone_Collection.find(query);
+            const iphones = await cursor.toArray();
+            res.send(iphones);
+        });
+        app.get('/categories/accessories', async (req, res) =>{
+           
+            const query ={};
+            const cursor =   categories_accessories_Collection.find(query);
+            const accessories = await cursor.toArray();
+            res.send(accessories);
+        });
+
+
+
+
+
+
+
+
+
 
 
 
