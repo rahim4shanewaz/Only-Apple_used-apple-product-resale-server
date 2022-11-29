@@ -140,7 +140,7 @@ async function run(){
 
 
 
-        app.get('/users/allbuyer', verifyJWt, async (req, res) => {
+        app.get('/users/allbuyer', verifyJWt,verifyAdmin, async (req, res) => {
             const role = req.query.role;
             
             const query = {role:"buyer"};
@@ -155,7 +155,7 @@ async function run(){
         
 
 
-        app.get('/users/allseller', verifyJWt, async (req, res) => {
+        app.get('/users/allseller', verifyJWt,verifyAdmin, async (req, res) => {
             const role = req.query.role;
             
             const query = {role:"seller"};
@@ -224,7 +224,31 @@ async function run(){
         });
 
 
+        app.delete('/buyer/:id', verifyJWt, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const result = await usersCollection.deleteOne(filter);
+            res.send(result);
+        })
+        app.delete('/seller/:id', verifyJWt, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const result = await usersCollection.deleteOne(filter);
+            res.send(result);
+        })
 
+        app.put('/seller/verify/:id', verifyJWt, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) }
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    verify: 'verified'
+                }
+            }
+            const result = await usersCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        });
 
 
 
