@@ -55,6 +55,8 @@ async function run(){
         const categories_macBook_Collection = client.db('categories').collection('apple-mac');
         const categories_iPhone_Collection = client.db('categories').collection('home-accessories');
         const categories_accessories_Collection = client.db('categories').collection('iphone');
+        const addedProductCollection = client.db('categories').collection('addedProduct');
+        const advertisedProductCollection = client.db('categories').collection('advertisedProduct');
 
 
         const verifyAdmin = async (req, res, next) => {
@@ -89,23 +91,28 @@ async function run(){
 
         app.get('/macBook',verifyJWt, async (req, res) =>{
            
-            const query ={};
-            const cursor =  categories_macBook_Collection.find(query);
+            const category = req.query.category;
+
+            const query ={category:"macBook"};
+            const cursor =  addedProductCollection.find(query);
             const macBooks = await cursor.toArray();
             res.send(macBooks);
         });
         
         app.get('/iphone',verifyJWt, async (req, res) =>{
            
-            const query ={};
-            const cursor =  categories_iPhone_Collection.find(query);
+            const category = req.query.category;
+
+            const query ={category:"iphone"};
+            const cursor = addedProductCollection.find(query);
             const iphones = await cursor.toArray();
             res.send(iphones);
         });
         app.get('/accessories',verifyJWt, async (req, res) =>{
+            const category = req.query.category;
            
-            const query ={};
-            const cursor =  categories_accessories_Collection.find(query);
+            const query ={category:"accessories"};
+            const cursor = addedProductCollection.find(query);
             const accessories = await cursor.toArray();
             res.send(accessories);
         });
@@ -114,23 +121,40 @@ async function run(){
 
 
         app.get('/categories/macBook',verifyJWt, async (req, res) =>{
-           
-            const query ={};
-            const cursor =  categories_macBook_Collection.find(query);
+            const category = req.query.category;
+
+            const query ={category:"macBook"};
+            const cursor =  addedProductCollection.find(query);
             const macBooks = await cursor.toArray();
             res.send(macBooks);
         });
         app.get('/categories/iphone',verifyJWt, async (req, res) =>{
-           
-            const query ={};
-            const cursor =  categories_iPhone_Collection.find(query);
+            const category = req.query.category;
+
+            const query ={category:"iphone"};
+            const cursor = addedProductCollection.find(query);
             const iphones = await cursor.toArray();
             res.send(iphones);
         });
+
+
         app.get('/categories/accessories',verifyJWt, async (req, res) =>{
+            const category = req.query.category;
+           
+            const query ={category:"accessories"};
+            const cursor = addedProductCollection.find(query);
+            const accessories = await cursor.toArray();
+            res.send(accessories);
+        });
+
+
+
+
+        app.get('/advertise/',verifyJWt, async (req, res) =>{
+            
            
             const query ={};
-            const cursor =   categories_accessories_Collection.find(query);
+            const cursor = advertisedProductCollection.find(query).limit(3).sort({time: -1});
             const accessories = await cursor.toArray();
             res.send(accessories);
         });
@@ -223,6 +247,36 @@ async function run(){
             res.send(result);
         });
 
+        app.post('/addedproduct', async (req, res) => {
+            const product = req.body;
+            console.log(product);
+            
+            const result = await addedProductCollection.insertOne(product);
+            res.send(result);
+        });
+       
+
+
+
+        app.get('/seller/products', async (req, res) => {
+
+
+            let query = {};
+
+            if (req.query.id) {
+                query = {
+                    id: req.query.id
+                }
+            }
+            const cursor = addedProductCollection.find(query);
+            
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+
+
+
+
 
         app.delete('/buyer/:id', verifyJWt, verifyAdmin, async (req, res) => {
             const id = req.params.id;
@@ -230,12 +284,31 @@ async function run(){
             const result = await usersCollection.deleteOne(filter);
             res.send(result);
         })
+
+
+
         app.delete('/seller/:id', verifyJWt, verifyAdmin, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) };
             const result = await usersCollection.deleteOne(filter);
             res.send(result);
         })
+
+
+
+        app.delete('/seller/product/:id', verifyJWt, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const result = await addedProductCollection.deleteOne(filter);
+            res.send(result);
+        })
+
+
+     
+
+
+
+
 
         app.put('/seller/verify/:id', verifyJWt, verifyAdmin, async (req, res) => {
             const id = req.params.id;
@@ -249,6 +322,78 @@ async function run(){
             const result = await usersCollection.updateOne(filter, updatedDoc, options);
             res.send(result);
         });
+
+        app.put('/product/booking/:id', verifyJWt, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) }
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    booking: 'yes'
+                }
+            }
+            const result = await addedProductCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        });
+
+
+    
+
+        app.post('/advertisedproduct', async (req, res) => {
+            const product = req.body;
+            console.log(product);
+            
+            const result = await advertisedProductCollection.insertOne(product);
+            res.send(result);
+        });
+
+        app.delete('/advertisedproduct/:id', verifyJWt, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: id };
+            const result = await advertisedProductCollection.deleteOne(filter);
+            res.send(result);
+        })
+
+        // app.get('/advertise/',verifyJWt, async (req, res) =>{
+           
+           
+        //     const query ={};
+        //     const cursor = advertisedProductCollection.find(query);
+        //     const result = await cursor.toArray();
+        //     res.send(result);
+        // });
+
+        app.get('/allservices', async (req, res) =>{
+           
+            const query ={};
+            const cursor =  serviceCollection.find(query);
+            const services = await cursor.toArray();
+            res.send(services);
+        });
+
+
+
+        app.put('/product/notAdvertise/:id', verifyJWt, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) }
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    advertise: 'no'
+                }
+            }
+            const result = await addedProductCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        });
+
+        // app.delete('/seller/product/:id', verifyJWt, async (req, res) => {
+        //     const id = req.params.id;
+        //     const filter = { _id: ObjectId(id) };
+        //     const result = await addedProductCollection.deleteOne(filter);
+        //     res.send(result);
+        // })
+
+        
 
 
 
