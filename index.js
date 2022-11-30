@@ -57,6 +57,7 @@ async function run(){
         const categories_accessories_Collection = client.db('categories').collection('iphone');
         const addedProductCollection = client.db('categories').collection('addedProduct');
         const advertisedProductCollection = client.db('categories').collection('advertisedProduct');
+        const bookingByUser = client.db('categories').collection('bookingByUser');
 
 
         const verifyAdmin = async (req, res, next) => {
@@ -72,47 +73,30 @@ async function run(){
 
 
 
-
-
-
-
-
-        app.get('/allservices', async (req, res) =>{
-           
-            const query ={};
-            const cursor =  serviceCollection.find(query);
-            const services = await cursor.toArray();
-            res.send(services);
-        });
-        
-
-
-
-
-        app.get('/macBook',verifyJWt, async (req, res) =>{
+        app.get('/macBook', verifyJWt, async (req, res) =>{
            
             const category = req.query.category;
 
             const query ={category:"macBook"};
-            const cursor =  addedProductCollection.find(query);
+            const cursor =  addedProductCollection.find(query).limit(2).sort({time: -1});
             const macBooks = await cursor.toArray();
             res.send(macBooks);
         });
         
-        app.get('/iphone',verifyJWt, async (req, res) =>{
+        app.get('/iphone', verifyJWt, async (req, res) =>{
            
             const category = req.query.category;
 
             const query ={category:"iphone"};
-            const cursor = addedProductCollection.find(query);
+            const cursor = addedProductCollection.find(query).limit(2).sort({time: -1});
             const iphones = await cursor.toArray();
             res.send(iphones);
         });
-        app.get('/accessories',verifyJWt, async (req, res) =>{
+        app.get('/accessories', verifyJWt, async (req, res) =>{
             const category = req.query.category;
            
             const query ={category:"accessories"};
-            const cursor = addedProductCollection.find(query);
+            const cursor = addedProductCollection.find(query).limit(2).sort({time: -1});
             const accessories = await cursor.toArray();
             res.send(accessories);
         });
@@ -120,29 +104,29 @@ async function run(){
 
 
 
-        app.get('/categories/macBook',verifyJWt, async (req, res) =>{
+        app.get('/categories/macBook', verifyJWt, async (req, res) =>{
             const category = req.query.category;
 
             const query ={category:"macBook"};
-            const cursor =  addedProductCollection.find(query);
+            const cursor =  addedProductCollection.find(query).sort({time: -1});
             const macBooks = await cursor.toArray();
             res.send(macBooks);
         });
-        app.get('/categories/iphone',verifyJWt, async (req, res) =>{
+        app.get('/categories/iphone', verifyJWt, async (req, res) =>{
             const category = req.query.category;
 
             const query ={category:"iphone"};
-            const cursor = addedProductCollection.find(query);
+            const cursor = addedProductCollection.find(query).sort({time: -1});
             const iphones = await cursor.toArray();
             res.send(iphones);
         });
 
 
-        app.get('/categories/accessories',verifyJWt, async (req, res) =>{
+        app.get('/categories/accessories', verifyJWt, async (req, res) =>{
             const category = req.query.category;
            
             const query ={category:"accessories"};
-            const cursor = addedProductCollection.find(query);
+            const cursor = addedProductCollection.find(query).sort({time: -1});
             const accessories = await cursor.toArray();
             res.send(accessories);
         });
@@ -150,7 +134,7 @@ async function run(){
 
 
 
-        app.get('/advertise/',verifyJWt, async (req, res) =>{
+        app.get('/advertise/', async (req, res) =>{
             
            
             const query ={};
@@ -160,11 +144,7 @@ async function run(){
         });
 
 
-
-
-
-
-        app.get('/users/allbuyer', verifyJWt,verifyAdmin, async (req, res) => {
+        app.get('/users/allbuyer', verifyJWt, async (req, res) => {
             const role = req.query.role;
             
             const query = {role:"buyer"};
@@ -174,12 +154,7 @@ async function run(){
 
 
 
-
-
-        
-
-
-        app.get('/users/allseller', verifyJWt,verifyAdmin, async (req, res) => {
+        app.get('/users/allseller', verifyJWt, async (req, res) => {
             const role = req.query.role;
             
             const query = {role:"seller"};
@@ -188,24 +163,17 @@ async function run(){
         });
 
 
-        app.get('/users/:email', async (req, res) => {
+        app.get('/users/:email', verifyJWt, async (req, res) => {
             const email = req.params.email;
             const query = { email }
             const user = await usersCollection.findOne(query);
             res.send(user);
         })
 
-        // app.get('/users/buyer/', async (req, res) => {
-           
-        //     const query = { email }
-        //     const user = await usersCollection.find(query);
-        //     res.send({ isBuyer: user?.role === 'buyer' });
-        // })
-
-
+   
         
 
-        app.get('/users/admin/:email', async (req, res) => {
+        app.get('/users/admin/:email', verifyJWt, async (req, res) => {
             const email = req.params.email;
             const query = { email }
             const user = await usersCollection.findOne(query);
@@ -213,14 +181,14 @@ async function run(){
         })
 
 
-        app.get('/users/buyer/:email', async (req, res) => {
+        app.get('/users/buyer/:email',  verifyJWt,async (req, res) => {
             const email = req.params.email;
             const query = { email }
             const user = await usersCollection.findOne(query);
             res.send({ isBuyer: user?.role === 'buyer' });
         })
 
-        app.get('/users/seller/:email', async (req, res) => {
+        app.get('/users/seller/:email',  verifyJWt,async (req, res) => {
             const email = req.params.email;
             const query = { email }
             const user = await usersCollection.findOne(query);
@@ -241,15 +209,15 @@ async function run(){
 
         app.post('/users', async (req, res) => {
             const user = req.body;
-            console.log(user);
+           
             
             const result = await usersCollection.insertOne(user);
             res.send(result);
         });
 
-        app.post('/addedproduct', async (req, res) => {
+        app.post('/addedproduct', verifyJWt, async (req, res) => {
             const product = req.body;
-            console.log(product);
+           
             
             const result = await addedProductCollection.insertOne(product);
             res.send(result);
@@ -258,7 +226,7 @@ async function run(){
 
 
 
-        app.get('/seller/products', async (req, res) => {
+        app.get('/seller/products', verifyJWt,  async (req, res) => {
 
 
             let query = {};
@@ -268,7 +236,7 @@ async function run(){
                     id: req.query.id
                 }
             }
-            const cursor = addedProductCollection.find(query);
+            const cursor = addedProductCollection.find(query).sort({time: -1});
             
             const result = await cursor.toArray();
             res.send(result);
@@ -278,7 +246,7 @@ async function run(){
 
 
 
-        app.delete('/buyer/:id', verifyJWt, verifyAdmin, async (req, res) => {
+        app.delete('/buyer/:id', verifyAdmin, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) };
             const result = await usersCollection.deleteOne(filter);
@@ -287,7 +255,7 @@ async function run(){
 
 
 
-        app.delete('/seller/:id', verifyJWt, verifyAdmin, async (req, res) => {
+        app.delete('/seller/:id', verifyAdmin, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) };
             const result = await usersCollection.deleteOne(filter);
@@ -304,13 +272,20 @@ async function run(){
         })
 
 
+        app.delete('/buyer/products/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { user: id };
+            const result = await bookingByUser.deleteOne(filter);
+            res.send(result);
+        })
+
      
 
 
 
 
 
-        app.put('/seller/verify/:id', verifyJWt, verifyAdmin, async (req, res) => {
+        app.put('/seller/verify/:id', verifyAdmin, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) }
             const options = { upsert: true };
@@ -323,7 +298,7 @@ async function run(){
             res.send(result);
         });
 
-        app.put('/product/booking/:id', verifyJWt, async (req, res) => {
+        app.put('/product/booking/:id', async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) }
             const options = { upsert: true };
@@ -341,39 +316,51 @@ async function run(){
 
         app.post('/advertisedproduct', async (req, res) => {
             const product = req.body;
-            console.log(product);
+          
             
             const result = await advertisedProductCollection.insertOne(product);
             res.send(result);
         });
 
-        app.delete('/advertisedproduct/:id', verifyJWt, async (req, res) => {
+
+
+
+        app.post('/bookingByUser', async (req, res) => {
+            const products = req.body;
+          
+            
+            const result = await bookingByUser.insertOne(products);
+            res.send(result);
+        });
+
+        app.get('/buyer/bookingByUser', async (req, res) => {
+
+
+            let query = {};
+
+            if (req.query.id) {
+                query = {
+                    user: req.query.id
+                }
+            }
+            const cursor = bookingByUser.find(query);
+            
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+
+        
+
+        app.delete('/advertisedproduct/:id', async (req, res) => {
             const id = req.params.id;
             const filter = { _id: id };
             const result = await advertisedProductCollection.deleteOne(filter);
             res.send(result);
         })
 
-        // app.get('/advertise/',verifyJWt, async (req, res) =>{
-           
-           
-        //     const query ={};
-        //     const cursor = advertisedProductCollection.find(query);
-        //     const result = await cursor.toArray();
-        //     res.send(result);
-        // });
+    
 
-        app.get('/allservices', async (req, res) =>{
-           
-            const query ={};
-            const cursor =  serviceCollection.find(query);
-            const services = await cursor.toArray();
-            res.send(services);
-        });
-
-
-
-        app.put('/product/notAdvertise/:id', verifyJWt, async (req, res) => {
+        app.put('/product/notAdvertise/:id', async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) }
             const options = { upsert: true };
@@ -386,22 +373,7 @@ async function run(){
             res.send(result);
         });
 
-        // app.delete('/seller/product/:id', verifyJWt, async (req, res) => {
-        //     const id = req.params.id;
-        //     const filter = { _id: ObjectId(id) };
-        //     const result = await addedProductCollection.deleteOne(filter);
-        //     res.send(result);
-        // })
-
-        
-
-
-
-
-
-
-
-
+   
 
 
     }
